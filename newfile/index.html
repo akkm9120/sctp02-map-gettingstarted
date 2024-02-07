@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="style.css">
+     <title>MAP</title>
+</head>
+<body>
+    <div class="d-flex" id="container">
+    <div id="SingaporeMap" style="height: 80vh;" class="col-md-8"></div>
+
+    <div class="col-md-4" id="inputForm">
+        <form class="container p-5">
+            <div class="mb-3">
+              <label for="currentPosition" class="form-label">From</label>
+              <input type="text" class="form-control" id="from" aria-describedby="emailHelp">
+            </div>
+            <div class="mb-3">
+              <label for="destination" class="form-label">To</label>
+              <input type="text" class="form-control" id="to">
+            </div>
+            <div class="mb-3 form-check">
+              <input type="checkbox" class="form-check-input" id="chkupdate">
+              <label class="form-check-label" for="exampleCheck1">Update my location every 3 sec</label>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btnDirection">Direction</button>
+          </form>
+    </div>
+</div>
+
+
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+     <script src="script.js"></script>
+</body>
+</html>
