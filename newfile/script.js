@@ -7,11 +7,28 @@ L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Grey/{z}/{x}/{y}.png', {   det
 }).addTo(map);
 
 
-document.querySelector("btnDirection").addEventListener('click', ()=>{
+
+const mrt_Response = await axios.get('data/MasterPlan2003MRTName.geojson');
+L.geoJson(mrt_Response.data, {
+    onEachFeature: function (feature, layer) {
+        layer.on('mouseover', function (e) {
+            this.openPopup();
+        });
+        layer.on('mouseout', function (e) {
+            this.closePopup();
+        });
+        layer.bindPopup(`${feature.properties.Name}
+        ${feature.properties.Description}`);
+    }
+}).addTo(map);
+})
+
+
+
+document.querySelector("#btnDirection").addEventListener('click', ()=>{
     const centerpoint = map.getBounds().getCenter();
     console.log(centerpoint);
 })
 
 
 
-})
