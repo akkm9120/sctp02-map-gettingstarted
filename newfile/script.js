@@ -2,7 +2,6 @@
 
 
 
-
 let singapore = [1.290270, 103.851959];
 let map ;
 let cities; // Ensure you have defined 'cities' somewhere in your code
@@ -12,8 +11,21 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initialize the map on the 'SingaporeMap' div
     map = L.map('SingaporeMap').setView(singapore, 12);
 
-    L.marker(singapore).addTo(map);
+    let singaporeMarker = L.marker(singapore,{ icon:singaporePin }).addTo(map);
+    singaporeMarker.bindPopup("Welcome to Singapore! 🇸🇬").openPopup();
 
+
+    map.on('zoomend', function () {
+        if (map.getZoom() >= 15) {
+            singaporeMarker.setOpacity(0); // Hide the marker when zoomed in beyond a certain level
+        } else if ( map.getZoom() < 10){
+            singaporeMarker.setOpacity(0);
+        }
+        else{
+            singaporeMarker.setOpacity(1); // Show the marker when zoomed out
+        }
+    });
+    
     let map1 =L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Grey/{z}/{x}/{y}.png', {
         detectRetina: true,
         maxZoom: 19,
@@ -32,33 +44,14 @@ document.addEventListener("DOMContentLoaded", async function () {
     var baseMaps = {
         "map1":map1,
         "OpenStreetMap": osm,
-        "OpenStreetMap.HOT": osmHOT
+        "Food,Drink&taxi": osmHOT
     };
 
-    // var overlayMaps = {
-    //     "Cities": cities // This will add the 'cities' layer to the overlay maps
-    // };
-    L.control.layers(baseMaps).addTo(map);
-
-
-
-
-
-
-
-
-
+   
     const response = await axios.get('data/Hotels.geojson');
     let markers = L.markerClusterGroup();
 
-    // Create a new icon
-    let hotelIcon = L.icon({
-        iconUrl: './icons/Designer (1).png',
-        iconSize: [26, 26],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -12]
-    });
-
+    
 
     for (let feature of response.data.features) {
         // Create a new marker
@@ -70,7 +63,31 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Add the marker to the markers group
         markers.addLayer(marker);
     }
-    map.addLayer(markers);
+
+    let overlayMaps = {
+        "Hotels": markers // This will add the 'cities' layer to the overlay maps
+    };
+    L.control.layers(baseMaps, overlayMaps).addTo(map);
+
+    map.on('click', function(e) {
+        var clickedLat = e.latlng.lat;
+        var clickedLon = e.latlng.lng;
+      
+        // Example using Nominatim API (replace with your preferred service and API key)
+        var nominatimUrl = "https://nominatim.openstreetmap.org/reverse?format=json&lat=" + clickedLat + "&lon=" + clickedLon + "&addressdetails=1";
+      
+        fetch(nominatimUrl)
+          .then(response => response.json())
+          .then(data => {
+            if (data.address && data.address.road) {
+              var locationName = data.address.road;
+              L.popup("Location: " + locationName).setLatLng(e.latlng).openOn(map);
+            } else {
+              console.log("Location name not found");
+            }
+          })
+          .catch(error => console.error(error));
+      });
 
 })
 
