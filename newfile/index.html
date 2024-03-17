@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
     <link rel="stylesheet" href="style.css">
     
     
@@ -16,7 +17,8 @@
 </head>
 <body>
     <div class="d-flex" id="container">
-    <div id="SingaporeMap" style="height: 80vh;" class="col-md-8"></div>
+    <div id="SingaporeMap" style="height: 80vh;z-index: 0;" class="col-md-8">
+    </div>
 
     <div class="col-md-4" id="inputForm">
         <div class="container p-5">
@@ -28,10 +30,13 @@
               <label for="destination" class="form-label">To</label>
               <input type="text" class="form-control" id="to">
             </div>
-            <div class="mb-3 form-check">
-              <input type="checkbox" class="form-check-input" id="chkupdate">
-              <label class="form-check-label" for="exampleCheck1">Update my location every 3 sec</label>
-            </div>
+
+            <select id="transport-mode">
+              <option value="driving">Driving</option>
+              <option value="walking">Walking</option>
+              <option value="cycling">Cycling</option>
+            </select>
+            
             <button type="submit" class="btn btn-primary" id="btnDirection">Direction</button>
 
             <div class="mb-3 mt-3 border border-light p-2">
@@ -41,7 +46,21 @@
           </div>
         </div>
     </div>
+    <div id="responeInstructions" style="z-index: 9999; height: 100px; width: 100px;">
+    </div>
 </div>
+
+
+
+<footer class="text-muted py-5">
+  <div class="container">
+    <p class="float-end mb-1">
+      <a href="#">Back to top</a>
+    </p>
+    <p class="mb-1">This map is using leaflet and APIs!</p>
+    <p class="mb-0">Interested in icons? <a href="https://lordicon.com/">Icons by Lordicon.com</a></p>
+  </div>
+</footer>
 
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
@@ -50,7 +69,8 @@
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster-src.js"></script>
      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-     <script src="icons.js"></script>
+  
+     <script src="icons.js"></script> 
      <script src="script.js"></script>
 </body>
 </html>
