@@ -1,11 +1,36 @@
-let singapore = [1.290270, 103.851959];
+let singapore = [1.29, 103.85] || [103.85,];
 let map;
 let cities; // Ensure you have defined 'cities' somewhere in your code
 let circle = null;
 
+let singaporePin = L.icon({
+    iconUrl: './icons/pngwing.com.png',
+    iconSize: [100, 56],  // Increase the size to 40x40 pixels
+    iconAnchor: [50, 50], // Adjust the anchor point if needed
+    popupAnchor: [-5, -50]
+});
+
+let hotelIcon = L.icon({
+    iconUrl: './icons/hotelwings.png',
+    iconSize: [16, 16],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12]
+});
+
+
 document.addEventListener("DOMContentLoaded", async function () {
     // Initialize the map on the 'SingaporeMap' div
-    map = L.map('SingaporeMap').setView(singapore, 12);
+
+    map = L.map('map').setView(singapore, 12);
+
+    // mapboxgl.accessToken = `pk.eyJ1IjoiYWttLTAwMSIsImEiOiJjbHFmY3kyMmIweHBxMnFxZjlnajZlbnBzIn0.q0Ajs20MNX5__KxsHzL4HQ`;
+    //  map= new mapboxgl.Map({
+    //     container: 'map',
+    //     style: 'mapbox://styles/mapbox/streets-v12',
+    //     center: singapore,
+    //     zoom: 12
+    //   });
+    // map.addControl(new mapboxgl.NavigationControl());
 
     let singaporeMarker = L.marker(singapore, { icon: singaporePin }).addTo(map);
     singaporeMarker.bindPopup("Welcome to Singapore! 🇸🇬").openPopup();
@@ -37,6 +62,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         maxZoom: 19,
         attribution: '© OpenStreetMap contributors, Tiles style by Humanitarian OpenStreetMap Team hosted by OpenStreetMap France'
     });
+
     let baseMaps = {
         "map1": map1,
         "OpenStreetMap": osm,
@@ -44,38 +70,70 @@ document.addEventListener("DOMContentLoaded", async function () {
     };
 
 
-    const response = await axios.get('data/Hotels.geojson');
+
+    let response = await axios.get('data/Hotels.geojson');
     let markers = L.markerClusterGroup();
-
-
-
     for (let feature of response.data.features) {
-        // Create a new marker
+
         let marker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]], { icon: hotelIcon });
-
-        // Bind a popup to the marker
         marker.bindPopup(`${feature.properties.Description}`);
-
-        // Add the marker to the markers group
         markers.addLayer(marker);
     }
 
+    let response1 = await axios.get('data/TouristAttractions (1).geojson');
+    let t_attractions = L.markerClusterGroup();
+    for (let feature of response1.data.features) {
+        let tmarker = L.marker([feature.geometry.coordinates[1], feature.geometry.coordinates[0]]);
+        tmarker.bindPopup(`${feature.properties.Description}`);
+        t_attractions.addLayer(tmarker);
+    }
+
     let overlayMaps = {
-        "Hotels": markers // This will add the 'cities' layer to the overlay maps
+        "Hotels": markers,
+        "Attractions": t_attractions
     };
     L.control.layers(baseMaps, overlayMaps).addTo(map);
 
+
+
+    //     const compassControl = L.control({ position: 'topright' });
+
+    //     compassControl.onAdd = function (map) {
+    //         const div = L.DomUtil.create('div', 'leaflet-compass');
+    //         div.innerHTML = '<i class="fas fa-compass"></i>'; // Use a compass icon
+    //         div.title = 'Rotate to North';
+
+    //         // Add click event to reset rotation (unchanged)
+    //         div.addEventListener('click', function () {
+    //             map.setView(map.getCenter(), map.getZoom());
+    //         });
+
+    //         // Update compass rotation on map move
+    //         map.on('move', function () {
+    //             const bearing = map.getBearing();
+    //             div.style.transform = `rotate(${bearing}deg)`;
+    //         });
+
+    //         return div;
+    //     };
+
+    // compassControl.addTo(map);
+
 })
 
+// const searchLayer = L.layerGroup();
+// searchLayer.addTo(map);
 
-document.getElementById("searchbtn").addEventListener('click', async () => {
-    const searchTerms = document.querySelector("#searchin").value;
+// document.querySelector("#searchbtn").addEventListener("click", async function () {
+//     const searchTerms = document.querySelector("#searchin").value;
 
-    const centerPoint = map.getBounds().getCenter();
-    const data = await search(centerPoint.lat, centerPoint.lng, searchTerms);
+//     const centerPoint = map.getBounds().getCenter();
+//     const data = await search(centerPoint.lat, centerPoint.lng, searchTerms);
 
-    addMarkersToMap(data, searchLayer, map);
-});
+//     addMarkersToMap(data, searchLayer, map);
+
+// });
+
 
 function removeCircle() {
     if (circle) {
@@ -84,12 +142,22 @@ function removeCircle() {
     }
 }
 
-document.querySelector("#btnDirection").addEventListener('click', () => {
+
+
+
+document.querySelector("#btnDirection").addEventListener('click',() => {
     if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(function (position) {
+        navigator.geolocation.getCurrentPosition(async function (position) {
             let latitude = position.coords.latitude;
             let longitude = position.coords.longitude;
-            axios.get(`https://api.mapbox.com/directions/v5/mapbox/cycling/${longitude},${latitude};103.846878,1.284390?alternatives=true&geometries=geojson&language=en&overview=full&steps=true&access_token=pk.eyJ1IjoiYWttLTAwMSIsImEiOiJjbHFmY3kyMmIweHBxMnFxZjlnajZlbnBzIn0.q0Ajs20MNX5__KxsHzL4HQ`)
+            let inputLocation = document.getElementById("to").value;
+            const apiUrl = `https://api.tomtom.com/search/2/geocode/${inputLocation}.json?key=56jDLQEJXuz69NIh1n9a6aukSHECQfsh`;
+            let endlocation = await axios.get(apiUrl);
+            let newEndlocation = [endlocation.data.results[0].position.lat, endlocation.data.results[0].position.lon];
+            console.log(newEndlocation)
+
+            
+            axios.get(`https://api.mapbox.com/directions/v5/mapbox/cycling/${longitude},${latitude};${newEndlocation[1]},${newEndlocation[0]}?alternatives=true&geometries=geojson&language=en&overview=full&steps=true&access_token=pk.eyJ1IjoiYWttLTAwMSIsImEiOiJjbHFmY3kyMmIweHBxMnFxZjlnajZlbnBzIn0.q0Ajs20MNX5__KxsHzL4HQ`)
                 .then(response => {
                     let data = response.data;
                     let route = L.geoJSON(data.routes[0].geometry, {
@@ -153,3 +221,72 @@ document.querySelector("#btnDirection").addEventListener('click', () => {
         console.error("Geolocation is not supported by your browser");
     }
 });
+
+function addMarkersToMap(searchResults, layer, map) {
+    // add markers:
+    // Example of how to get lat lng from the FourSquare results: 
+    // x.results[0].geocodes.main.latitude = lat
+    // x.results[0].goecodes.main.longtitude = lng
+
+    // remove all existing markers from the provided layer
+    layer.clearLayers();
+
+    const searchResultOutput = document.querySelector("#search-results");
+    searchResultOutput.innerHTML = "";
+
+    // take one location at a time from data.results
+    for (let location of searchResults.results) {
+        // PART A: create a marker for that location
+
+        const lat = location.geocodes.main.latitude;
+        const lng = location.geocodes.main.longitude;
+        const address = location.location.formatted_address;
+        const name = location.name;
+        const marker = L.marker([lat, lng]);
+        marker.bindPopup(function () {
+
+            const divElement = document.createElement('div');
+            divElement.innerHTML = `
+                <h3>${name}</h3>
+                <img src="#"/>
+                <h4>${address}</h4>
+                <button class="clickButton">Click</button>
+            `;
+
+            async function getPicture() {
+                const photos = await getPhotoFromFourSquare(location.fsq_id);
+                const firstPhoto = photos[0];
+                const photoUrl = firstPhoto.prefix + '150x150' + firstPhoto.suffix;
+                divElement.querySelector("img").src = photoUrl;
+            }
+
+            getPicture();
+
+            divElement.querySelector(".clickButton").addEventListener("click", function () {
+                alert("hello world!");
+            });
+
+
+            // whatver element or HTML the function returns will be inside popup
+            return divElement;
+        });
+
+        marker.addTo(layer);
+        const divElement = document.createElement('div');
+
+        // 3. add the element to the result element
+        divElement.innerHTML = location.name;
+
+        divElement.addEventListener("click", function () {
+
+            const lat = location.geocodes.main.latitude;
+            const lng = location.geocodes.main.longitude;
+            map.flyTo([lat, lng], 16);
+            marker.openPopup();
+        })
+
+        searchResultOutput.appendChild(divElement);
+
+
+    }
+}

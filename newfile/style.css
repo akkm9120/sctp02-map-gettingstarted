@@ -10,11 +10,18 @@
 div#instructions-container {
     position: absolute;
     top: 1rem;
-    right: 61%;
+    left: 5%;
     opacity: 0.7;
     height: 300px;
     overflow: hidden;
     scroll-behavior: auto;
     overflow: scroll;
     background-color: rgb(198, 234, 234);
+}
+
+.leaflet-compass {
+    font-size: 50px;
+    color: #4f1e1e;
+    cursor: pointer;
+    margin: 10px;
 }
