@@ -1,4 +1,4 @@
-let singapore = [1.29, 103.85] || [103.85,];
+let singapore = [1.29, 103.85];
 let map;
 let cities; // Ensure you have defined 'cities' somewhere in your code
 let circle = null;
@@ -47,16 +47,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     });
 
-    let map1 = L.tileLayer('https://www.onemap.gov.sg/maps/tiles/Grey/{z}/{x}/{y}.png', {
-        detectRetina: true,
-        maxZoom: 19,
-        minZoom: 11,
-    }).addTo(map);
+    // mapboxgl.accessToken = 'pk.eyJ1IjoiYWttLTAwMSIsImEiOiJjbHFmY3kyMmIweHBxMnFxZjlnajZlbnBzIn0.q0Ajs20MNX5__KxsHzL4HQ';
+    // const map1 = new mapboxgl.Map({
+    //     container: 'map', // container ID
+    //     style: 'mapbox://styles/akm-001/cluf3t4nt013e01pr6yuz1q0m', // style URL
+    //     center: [103.85, 1.29] , // starting position [lng, lat]
+    //     zoom: 9, // starting zoom
+    // })
 
     let osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '© OpenStreetMap'
-    });
+    }).addTo(map);
 
     let osmHOT = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -64,7 +66,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     let baseMaps = {
-        "map1": map1,
         "OpenStreetMap": osm,
         "Food,Drink&taxi": osmHOT
     };
@@ -92,32 +93,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         "Hotels": markers,
         "Attractions": t_attractions
     };
+
     L.control.layers(baseMaps, overlayMaps).addTo(map);
-
-
-
-    //     const compassControl = L.control({ position: 'topright' });
-
-    //     compassControl.onAdd = function (map) {
-    //         const div = L.DomUtil.create('div', 'leaflet-compass');
-    //         div.innerHTML = '<i class="fas fa-compass"></i>'; // Use a compass icon
-    //         div.title = 'Rotate to North';
-
-    //         // Add click event to reset rotation (unchanged)
-    //         div.addEventListener('click', function () {
-    //             map.setView(map.getCenter(), map.getZoom());
-    //         });
-
-    //         // Update compass rotation on map move
-    //         map.on('move', function () {
-    //             const bearing = map.getBearing();
-    //             div.style.transform = `rotate(${bearing}deg)`;
-    //         });
-
-    //         return div;
-    //     };
-
-    // compassControl.addTo(map);
 
 })
 
@@ -144,83 +121,80 @@ function removeCircle() {
 
 
 
+let route; 
 
-document.querySelector("#btnDirection").addEventListener('click',() => {
+let resultroute;document.querySelector("#btnDirection").addEventListener('click', async () => {
     if ("geolocation" in navigator) {
+      try {
+        if (route) route.remove();
         navigator.geolocation.getCurrentPosition(async function (position) {
             let latitude = position.coords.latitude;
             let longitude = position.coords.longitude;
-            let inputLocation = document.getElementById("to").value;
-            const apiUrl = `https://api.tomtom.com/search/2/geocode/${inputLocation}.json?key=56jDLQEJXuz69NIh1n9a6aukSHECQfsh`;
-            let endlocation = await axios.get(apiUrl);
-            let newEndlocation = [endlocation.data.results[0].position.lat, endlocation.data.results[0].position.lon];
-            console.log(newEndlocation)
-
-            
-            axios.get(`https://api.mapbox.com/directions/v5/mapbox/cycling/${longitude},${latitude};${newEndlocation[1]},${newEndlocation[0]}?alternatives=true&geometries=geojson&language=en&overview=full&steps=true&access_token=pk.eyJ1IjoiYWttLTAwMSIsImEiOiJjbHFmY3kyMmIweHBxMnFxZjlnajZlbnBzIn0.q0Ajs20MNX5__KxsHzL4HQ`)
-                .then(response => {
-                    let data = response.data;
-                    let route = L.geoJSON(data.routes[0].geometry, {
-                        style: {
-                            color: 'blue',
-                            weight: 5,
-                            opacity: 0.6
-                        }
-                    }).addTo(map);
-
-                    map.fitBounds(route.getBounds());
-                    let navigationIcon = L.icon({
-                        iconUrl: './icons/Navigation.png', // Path to the PNG icon
-                        iconSize: [32, 32],
-                        iconAnchor: [16, 16]
-                    });
-
-                    L.marker([latitude, longitude], { icon: navigationIcon }).addTo(map)
-                        .bindPopup(`<lord-icon
-                        src="https://cdn.lordicon.com/oxbjzlrk.json"
-                        trigger="loop"
-                        delay="000"
-                        style="width:50px;height:50px">
-                    </lord-icon>
-                    <p>You are here.</p>`).openPopup();
-
-                    // Check if the instructions-container div already exists
-                    var existingContainer = document.getElementById('instructions-container');
-
-                    // If it exists, remove it
-                    if (existingContainer) {
-                        existingContainer.remove();
-                    }
-
-                    const instructionsContainer = document.createElement('div');
-                    instructionsContainer.id = "instructions-container"; // Optional: set an ID for easier selection
-
-                    const instructions = document.createElement('ol');
-
-                    data.routes[0].legs.forEach(leg => {
-                        leg.steps.forEach(step => {
-                            const li = document.createElement('li');
-                            li.textContent = step.maneuver.instruction;
-                            instructions.appendChild(li);
-                        });
-                    });
-
-                    instructionsContainer.appendChild(instructions);
-
-                    document.body.appendChild(instructionsContainer);
-
-
-                })
-                .catch(error => {
-                    console.error('Error fetching route:', error);
-                });
-        }, function (error) {
-            console.error("Error getting location:", error.message);
+        const inputLocation = document.getElementById("to").value;
+  
+        const apiUrl = `https://api.tomtom.com/search/2/geocode/${inputLocation}.json?key=56jDLQEJXuz69NIh1n9a6aukSHECQfsh`; // Replace with your actual key
+        const endlocation = await axios.get(apiUrl);
+        const newEndlocation = [endlocation.data.results[0].position.lat, endlocation.data.results[0].position.lon];
+  
+        const mapboxUrl = `https://api.mapbox.com/directions/v5/mapbox/${document.getElementById('transport-mode').value}/${longitude},${latitude};${newEndlocation[1]},${newEndlocation[0]}?alternatives=true&geometries=geojson&language=en&overview=full&steps=true&access_token=pk.eyJ1IjoiYWttLTAwMSIsImEiOiJjbHFmY3kyMmIweHBxMnFxZjlnajZlbnBzIn0.q0Ajs20MNX5__KxsHzL4HQ`; // Replace with your actual token
+        const response = await axios.get(mapboxUrl);
+        const data = response.data;
+  
+         route = L.geoJSON(data.routes[0].geometry, {
+          style: {
+            color: 'blue',
+            weight: 5,
+            opacity: 0.6
+          }
+        }).addTo(map);
+  
+        map.fitBounds(route.getBounds());
+  
+        const navigationIcon = L.icon({
+          iconUrl: './icons/Navigation.png',
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
         });
+  
+        L.marker([latitude, longitude], { icon: navigationIcon }).addTo(map)
+          .bindPopup(`
+            <lord-icon
+              src="https://cdn.lordicon.com/oxbjzlrk.json"
+              trigger="loop"
+              delay="000"
+              style="width:50px;height:50px">
+            </lord-icon>
+            <p>You are here.</p>
+          `).openPopup();
+  
+        // Remove existing instructions container if present
+        const existingContainer = document.getElementById('instructions-container');
+        existingContainer?.remove();
+  
+        const instructionsContainer = document.createElement('div');
+        instructionsContainer.id = "instructions-container";
+  
+        const instructions = document.createElement('ol');
+        data.routes[0].legs.forEach(leg => {
+          leg.steps.forEach(step => {
+            const li = document.createElement('li');
+            li.textContent = step.maneuver.instruction;
+            instructions.appendChild(li);
+          });
+        });
+  
+        instructionsContainer.appendChild(instructions);
+        document.body.appendChild(instructionsContainer);
+    })
+      } catch (error) {
+        console.error("Error:", error);
+        // Handle errors gracefully, like displaying a message to the user
+      }
     } else {
-        console.error("Geolocation is not supported by your browser");
+      console.error("Geolocation is not supported by your browser");
     }
-});
+  });
+  
 
 function addMarkersToMap(searchResults, layer, map) {
     // add markers:
